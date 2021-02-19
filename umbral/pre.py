@@ -153,6 +153,13 @@ class Capsule:
 
         return delegating_key_details, receiving_key_details, verifying_key_details
 
+    #--------------------------------------------------
+    def clear_correctness_keys(self) -> None:
+        self._cfrag_correctness_keys = {
+            'delegating': None, 'receiving': None, 'verifying': None
+        }   # type: dict
+    #--------------------------------------------------
+
     def to_bytes(self) -> bytes:
         """
         Serialize the Capsule into a bytestring.
@@ -350,6 +357,28 @@ def reencrypt(kfrag: KFrag,
         cfrag.prove_correctness(capsule, kfrag, metadata)
 
     return cfrag
+
+# -----------------------------
+
+def hop_reencrypt(kfrag: KFrag, 
+                  cfrag: CapsuleFrag, 
+                  capsule: Capsule,
+                  metadata: Optional[bytes] = None,
+                  provide_proof: bool = True) -> CapsuleFrag:
+
+    rk = kfrag.bn_key
+    e1 = rk * cfrag.point_e1
+    v1 = rk * cfrag.point_v1
+
+    cfrag = CapsuleFrag(point_e1=e1, point_v1=v1, kfrag_id=kfrag.id,
+                        point_precursor=kfrag.point_precursor)
+
+    if provide_proof:
+        cfrag.prove_correctness(capsule, kfrag, metadata)
+    
+    return cfrag
+
+# -----------------------------
 
 
 def _encapsulate(alice_pubkey: UmbralPublicKey, 

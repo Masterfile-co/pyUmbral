@@ -250,6 +250,8 @@ class CapsuleFrag:
         kfrag_validity_message = bytes().join(bytes(item) for item in validity_input)
         valid_kfrag_signature = self.proof.kfrag_signature.verify(kfrag_validity_message, signing_pubkey)
 
+        # valid_kfrag_signature = True
+
         z3 = self.proof.bn_sig
         correct_reencryption_of_e = z3 * e == e2 + (h * e1)
 
