@@ -60,9 +60,17 @@ capsule.set_correctness_keys(delegating=bobs_public_key,
                              receiving=charlies_public_key,
                              verifying=bobs_verifying_key)
 
+capsule.set_originating_key(originating=alices_public_key)
+
 cfrags_23 = list()
-for kfrag, cfrag in zip(kfrags_23, cfrags):
-    cfrag_23 = pre.hop_reencrypt(kfrag, cfrag, capsule)
+# for kfrag, cfrag in zip(kfrags_23, cfrags):
+#     cfrag_23 = pre.hop_reencrypt(kfrag, cfrag, capsule)
+#     cfrags_23.append(cfrag_23)
+
+for kfrag_12, kfrag_23 in zip(kfrags_12, kfrags_23):
+    kfrag_23.bn_key = kfrag_12.bn_key*kfrag_23.bn_key
+    kfrag_23.point_commitment = kfrag_23.bn_key*params.u
+    cfrag_23 = pre.reencrypt(kfrag=kfrag_23, capsule=capsule, verify_kfrag=False)
     cfrags_23.append(cfrag_23)
 
 for cfrag in cfrags_23:

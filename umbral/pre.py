@@ -76,7 +76,7 @@ class Capsule:
 
         self._attached_cfrags = set()    # type: set
         self._cfrag_correctness_keys = {
-            'delegating': None, 'receiving': None, 'verifying': None
+            'delegating': None, 'receiving': None, 'verifying': None, 'originating': None
         }   # type: dict
 
     class NotValid(ValueError):
@@ -120,7 +120,7 @@ class Capsule:
         return cls(params, *components)
 
     def _set_cfrag_correctness_key(self, key_type: str, key: Optional[UmbralPublicKey]) -> bool:
-        if key_type not in ("delegating", "receiving", "verifying"): 
+        if key_type not in ("delegating", "receiving", "verifying", "originating"): 
             raise ValueError("You can only set 'delegating', 'receiving' or 'verifying' keys.") 
 
         current_key = self._cfrag_correctness_keys[key_type]
@@ -156,8 +156,12 @@ class Capsule:
     #--------------------------------------------------
     def clear_correctness_keys(self) -> None:
         self._cfrag_correctness_keys = {
-            'delegating': None, 'receiving': None, 'verifying': None
+            'delegating': None, 'receiving': None, 'verifying': None, 'originating': None
         }   # type: dict
+
+    def set_originating_key(self,
+                            originating: Optional[UmbralPublicKey] = None) -> None:
+        self._set_cfrag_correctness_key(key_type="originating", key=originating)
     #--------------------------------------------------
 
     def to_bytes(self) -> bytes:
@@ -463,7 +467,7 @@ def _decapsulate_reencrypted(receiving_privkey: UmbralPrivateKey, capsule: Capsu
     e, v, s = capsule.components()
     h = hash_to_curvebn(e, v, params=params)
 
-    orig_pub_key = capsule.get_correctness_keys()['delegating'].point_key  # type: ignore
+    orig_pub_key = capsule.get_correctness_keys()['originating'].point_key  # type: ignore
 
     if not (s / d) * orig_pub_key == (h * e_prime) + v_prime:
         raise GenericUmbralError()
